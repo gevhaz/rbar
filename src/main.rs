@@ -7,16 +7,33 @@ use std::time::Duration;
 
 const DELIM: &str = " | ";
 
-type Block = (u32, fn() -> String);
+type IntervalMs = u32;
+
+#[derive(Copy, Clone)]
+pub enum BlockFn {
+    Function(fn() -> String),
+    Script(&'static str),
+}
+
+impl BlockFn {
+    fn resolve(&self) -> String {
+        match self {
+            BlockFn::Function(f) => f(),
+            BlockFn::Script(path) => {
+                String::from_utf8(Command::new(path).output().unwrap().stdout).unwrap()
+            }
+        }
+    }
+}
+
+type Block = (IntervalMs, BlockFn);
 
 fn main() {
-    let blocks: &[Block] = &[
-        (3000, blocks::date),
-    ];
+    let blocks: &[Block] = &[(3000, blocks::date()), (1000, blocks::bat())];
 
     let mut results = blocks
         .into_iter()
-        .map(|(_, block)| block())
+        .map(|(_, block)| block.resolve())
         .collect::<Vec<_>>();
 
     let (tx, rx) = channel();
@@ -25,7 +42,7 @@ fn main() {
         let thread_tx = tx.clone();
 
         thread::spawn(move || loop {
-            let _ = thread_tx.send((id, proc()));
+            let _ = thread_tx.send((id, proc.resolve()));
             thread::sleep(Duration::from_millis(interval as u64));
         });
     }
