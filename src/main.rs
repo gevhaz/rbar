@@ -5,11 +5,14 @@ use std::sync::mpsc::channel;
 use std::thread;
 use std::time::Duration;
 
-use crate::blocks::BLOCKS;
+use crate::blocks::{BLOCKS, DELIM};
 
 #[derive(Copy, Clone)]
 pub enum BlockFn {
+    /// A Rust function that should be called when an update is due.
     Internal(fn() -> String),
+
+    /// The path to a script to execute when an update is due.
     External(fn() -> &'static str),
 }
 
@@ -24,8 +27,6 @@ impl BlockFn {
     }
 }
 
-const DELIM: &str = " | ";
-
 fn main() {
     let mut results = BLOCKS
         .into_iter()
@@ -39,7 +40,7 @@ fn main() {
 
         thread::spawn(move || loop {
             let _ = thread_tx.send((id, proc.resolve()));
-            thread::sleep(Duration::from_millis(interval as u64));
+            thread::sleep(Duration::from_secs(interval as u64));
         });
     }
 
