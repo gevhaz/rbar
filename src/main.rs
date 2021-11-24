@@ -5,40 +5,36 @@ use std::sync::mpsc::channel;
 use std::thread;
 use std::time::Duration;
 
-const DELIM: &str = " | ";
-
-type IntervalMs = u32;
+use crate::blocks::BLOCKS;
 
 #[derive(Copy, Clone)]
 pub enum BlockFn {
-    Function(fn() -> String),
-    Script(&'static str),
+    Internal(fn() -> String),
+    External(fn() -> &'static str),
 }
 
 impl BlockFn {
     fn resolve(&self) -> String {
         match self {
-            BlockFn::Function(f) => f(),
-            BlockFn::Script(path) => {
-                String::from_utf8(Command::new(path).output().unwrap().stdout).unwrap()
+            BlockFn::Internal(f) => f(),
+            BlockFn::External(path) => {
+                String::from_utf8(Command::new(path()).output().unwrap().stdout).unwrap()
             }
         }
     }
 }
 
-type Block = (IntervalMs, BlockFn);
+const DELIM: &str = " | ";
 
 fn main() {
-    let blocks: &[Block] = &[(3000, blocks::date()), (1000, blocks::bat())];
-
-    let mut results = blocks
+    let mut results = BLOCKS
         .into_iter()
         .map(|(_, block)| block.resolve())
         .collect::<Vec<_>>();
 
     let (tx, rx) = channel();
 
-    for (id, &(interval, proc)) in blocks.iter().enumerate() {
+    for (id, &(interval, proc)) in BLOCKS.iter().enumerate() {
         let thread_tx = tx.clone();
 
         thread::spawn(move || loop {

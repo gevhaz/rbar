@@ -1,13 +1,19 @@
-use crate::BlockFn;
 use std::process::Command;
 
-pub fn date() -> BlockFn {
-    BlockFn::Function(|| {
-        let date = Command::new("date").output().unwrap();
-        String::from_utf8(date.stdout).unwrap()
-    })
+use crate::BlockFn::{self, Internal, External};
+
+pub fn date() -> String {
+    let date = Command::new("date").output().unwrap();
+    String::from_utf8(date.stdout).unwrap()
 }
 
-pub fn bat() -> BlockFn {
-    BlockFn::Script("/home/plaos/.local/scripts/statusbar/sb-bat")
+pub fn bat() -> &'static str {
+    "/home/plaos/.local/scripts/statusbar/sb-bat"
 }
+
+type Block = (u32, BlockFn);
+
+pub const BLOCKS: &[Block] = &[
+    (3000, Internal(date)),
+    (1000, External(bat)),
+];
