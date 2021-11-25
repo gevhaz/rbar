@@ -7,8 +7,12 @@ use std::time::Duration;
 
 use crate::config::{BLOCKS, DELIM};
 
+pub type IntervalSeconds = u64;
+pub type Procedure = fn() -> String;
+pub type Block = (IntervalSeconds, Procedure);
+
 fn main() {
-    let mut results = BLOCKS.iter().map(|(_, block)| block()).collect::<Vec<_>>();
+    let mut results: Vec<String> = BLOCKS.iter().map(|(_, block)| block()).collect();
 
     let (tx, rx) = channel();
 
@@ -17,7 +21,7 @@ fn main() {
 
         thread::spawn(move || loop {
             let _ = thread_tx.send((id, proc()));
-            thread::sleep(Duration::from_secs(interval as u64));
+            thread::sleep(Duration::from_secs(interval));
         });
     }
 
