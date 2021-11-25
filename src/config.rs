@@ -13,17 +13,17 @@ pub const DELIM: &str = "  ";
 /// This can be useful, for example, when you want to use scripts as blocks
 /// in the status bar.
 fn run_cmd(cmd: &str, args: &[&str], envs: &[(&str, &str)]) -> String {
-    let mut command = Command::new(cmd);
-    command.args(args);
-
-    for &(k, v) in envs {
-        command.env(k, v);
-    }
-
-    String::from_utf8(command.output().unwrap().stdout)
-        .unwrap()
-        .trim_end()
-        .into()
+    String::from_utf8(
+        Command::new(cmd)
+            .args(args)
+            .envs(Vec::from(envs))
+            .output()
+            .unwrap()
+            .stdout,
+    )
+    .unwrap()
+    .trim_end()
+    .into()
 }
 
 mod blocks {
