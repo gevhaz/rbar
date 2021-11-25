@@ -1,11 +1,11 @@
-mod blocks;
+mod config;
 
 use std::process::Command;
 use std::sync::mpsc::channel;
 use std::thread;
 use std::time::Duration;
 
-use crate::blocks::{BLOCKS, DELIM};
+use crate::config::{BLOCKS, DELIM};
 
 fn main() {
     let mut results = BLOCKS.iter().map(|(_, block)| block()).collect::<Vec<_>>();
