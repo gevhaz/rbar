@@ -10,6 +10,8 @@ pub const BLOCKS: &[Block] = &[(30, blocks::bat), (1, blocks::date)];
 pub const DELIM: &str = "  ";
 
 /// Helper function to improve ergonomics when executing external commands.
+/// This can be useful, for example, when you want to use scripts as blocks
+/// in the status bar.
 fn run_cmd(cmd: &str, args: &[&str], envs: &[(&str, &str)]) -> String {
     let mut command = Command::new(cmd);
     command.args(args);
