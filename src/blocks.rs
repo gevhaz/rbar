@@ -1,7 +1,12 @@
 use std::fs;
 use std::process::Command;
 
-use crate::BlockFn::{self, Internal};
+type IntervalSeconds = u32;
+type Procedure = fn() -> String;
+type Block = (IntervalSeconds, Procedure);
+
+pub const DELIM: &str = "  ";
+pub const BLOCKS: &[Block] = &[(30, bat), (1, date)];
 
 fn run_cmd(cmd: &str, args: &[&str], envs: &[(&str, &str)]) -> String {
     let mut command = Command::new(cmd);
@@ -22,8 +27,14 @@ pub fn date() -> String {
 }
 
 pub fn bat() -> String {
-    let cap: String = fs::read_to_string("/sys/class/power_supply/BAT0/capacity").unwrap().trim_end().into();
-    let status: String = fs::read_to_string("/sys/class/power_supply/BAT0/status").unwrap().trim_end().into();
+    let cap: String = fs::read_to_string("/sys/class/power_supply/BAT0/capacity")
+        .unwrap()
+        .trim_end()
+        .into();
+    let status: String = fs::read_to_string("/sys/class/power_supply/BAT0/status")
+        .unwrap()
+        .trim_end()
+        .into();
 
     // let cap = run_cmd("cat", &["/sys/class/power_supply/BAT0/capacity"], &[]);
     // let status = run_cmd("cat", &["/sys/class/power_supply/BAT0/status"], &[]);
@@ -35,9 +46,3 @@ pub fn bat() -> String {
     };
     format!("[{}{}%]", status, cap)
 }
-
-pub const DELIM: &str = "  ";
-pub const BLOCKS: &[(u32, BlockFn)] = &[
-    (30, Internal(bat)),
-    (1, Internal(date)),
-];

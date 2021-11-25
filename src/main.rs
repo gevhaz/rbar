@@ -7,31 +7,8 @@ use std::time::Duration;
 
 use crate::blocks::{BLOCKS, DELIM};
 
-#[derive(Copy, Clone)]
-pub enum BlockFn {
-    /// A Rust function that should be called when an update is due.
-    Internal(fn() -> String),
-
-    /// The path to a script to execute when an update is due.
-    External(fn() -> &'static str),
-}
-
-impl BlockFn {
-    fn resolve(&self) -> String {
-        match self {
-            BlockFn::Internal(f) => f(),
-            BlockFn::External(path) => {
-                String::from_utf8(Command::new(path()).output().unwrap().stdout).unwrap()
-            }
-        }
-    }
-}
-
 fn main() {
-    let mut results = BLOCKS
-        .iter()
-        .map(|(_, block)| block.resolve())
-        .collect::<Vec<_>>();
+    let mut results = BLOCKS.iter().map(|(_, block)| block()).collect::<Vec<_>>();
 
     let (tx, rx) = channel();
 
@@ -39,7 +16,7 @@ fn main() {
         let thread_tx = tx.clone();
 
         thread::spawn(move || loop {
-            let _ = thread_tx.send((id, proc.resolve()));
+            let _ = thread_tx.send((id, proc()));
             thread::sleep(Duration::from_secs(interval as u64));
         });
     }
