@@ -29,7 +29,7 @@ impl BlockFn {
 
 fn main() {
     let mut results = BLOCKS
-        .into_iter()
+        .iter()
         .map(|(_, block)| block.resolve())
         .collect::<Vec<_>>();
 
