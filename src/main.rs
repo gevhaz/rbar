@@ -7,14 +7,12 @@ use std::time::Duration;
 
 use crate::config::{BLOCKS, DELIM};
 
-/// How many seconds to sleep before evaluating again.
-pub type IntervalSeconds = u64;
 /// The signature of a block. Anything with this signature
 /// can be used as a block.
 pub type Procedure = fn() -> String;
 /// A Block is the combination of an interval and a procedure,
 /// evaluating the <procedure> each <interval> seconds.
-pub type Block = (IntervalSeconds, Procedure);
+pub type Block = (Duration, Procedure);
 
 fn main() {
     // Evaluate all blocks once on startup
@@ -33,7 +31,7 @@ fn main() {
             let _ = thread_tx.send((id, proc()));
 
             // Sleep for the specified interval
-            thread::sleep(Duration::from_secs(interval));
+            thread::sleep(interval);
         });
     }
 
@@ -42,10 +40,14 @@ fn main() {
         let (id, msg) = rx.recv().unwrap();
         results[id] = msg;
 
+        // The "statusbar" is the combination of all blocks, with
+        // the specified delimiter between each
+        let statusbar = results.join(DELIM);
+
         // Update the status bar
         let _ = Command::new("xsetroot")
             .arg("-name")
-            .arg(results.join(DELIM))
+            .arg(statusbar)
             .status();
     }
 }

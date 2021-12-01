@@ -1,14 +1,15 @@
 use std::process::Command;
+use std::time::Duration;
 
 use crate::Block;
 
 /// This defines what blocks should be drawn, and in what order.
 pub const BLOCKS: &[Block] = &[
-    (10, blocks::mem),
-    (10, blocks::cpu),
-    (120, blocks::disk),
-    (30, blocks::bat),
-    (1, blocks::date),
+    (Duration::from_secs(10), blocks::mem),
+    (Duration::from_secs(10), blocks::cpu),
+    (Duration::from_secs(120), blocks::disk),
+    (Duration::from_secs(30), blocks::bat),
+    (Duration::from_secs(1), blocks::date),
 ];
 
 /// This defines the delimiter between each block. Use empty
