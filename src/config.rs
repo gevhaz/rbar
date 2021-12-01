@@ -3,7 +3,13 @@ use std::process::Command;
 use crate::Block;
 
 /// This defines what blocks should be drawn, and in what order.
-pub const BLOCKS: &[Block] = &[(30, blocks::bat), (1, blocks::date)];
+pub const BLOCKS: &[Block] = &[
+    (10, blocks::mem),
+    (10, blocks::cpu),
+    (120, blocks::disk),
+    (30, blocks::bat),
+    (1, blocks::date),
+];
 
 /// This defines the delimiter between each block. Use empty
 /// string for no delimiter.
@@ -26,15 +32,18 @@ fn run_cmd(cmd: &str, args: &[&str], envs: &[(&str, &str)]) -> String {
     .into()
 }
 
+/// Given the basename of a script, use a pre-defined directory
+/// and execute the script in it.
+fn run_script(script_name: &str) -> String {
+    let base = String::from("/home/plaos/.local/scripts/statusbar");
+    let script = format!("{}/{}", base, script_name);
+    run_cmd(&script, &[], &[])
+}
+
 mod blocks {
     use std::fs;
 
-    use super::run_cmd;
-
-    /// Block for displaying the current date and time.
-    pub fn date() -> String {
-        run_cmd("date", &["+%a %b %d %H:%M:%S"], &[("LC_ALL", "en")])
-    }
+    use super::{run_cmd, run_script};
 
     /// Block for displaying the current battery level, as well
     /// as if it is charging or not.
@@ -55,6 +64,26 @@ mod blocks {
             _ => "?",
         };
 
-        format!("[{}{}%]", status, cap)
+        format!("{}{}%", status, cap)
+    }
+
+    /// Displays CPU information; percentage used and temperature.
+    pub fn cpu() -> String {
+        run_script("sb-cpu")
+    }
+
+    /// Block for displaying the current date and time.
+    pub fn date() -> String {
+        run_cmd("date", &["+%a %b %d %H:%M"], &[("LC_ALL", "en")])
+    }
+
+    /// Displays the amount of available storage left.
+    pub fn disk() -> String {
+        run_script("sb-disk")
+    }
+
+    /// Displays a percentage of the used memory.
+    pub fn mem() -> String {
+        run_script("sb-mem")
     }
 }
