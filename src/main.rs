@@ -7,6 +7,14 @@ use std::time::Duration;
 
 use crate::config::{BLOCKS, DELIM};
 
+fn main() {
+    // If the `run` function errors, print the error and exit.
+    if let Err(e) = run() {
+        eprintln!("{}", e.to_string());
+        std::process::exit(1);
+    }
+}
+
 /// The signature of a block. Anything with this signature
 /// can be used as a block.
 pub type Procedure = fn() -> String;
@@ -17,14 +25,6 @@ pub type Block = (Duration, Procedure);
 
 /// Internal representation of something failable.
 type Result<T> = std::result::Result<T, RecvError>;
-
-fn main() {
-    // If the `run` function errors, print the error and exit.
-    if let Err(e) = run() {
-        eprintln!("{}", e.to_string());
-        std::process::exit(1);
-    }
-}
 
 /// Spawn each block in its own thread, and wait for them to update.
 fn run() -> Result<()> {
